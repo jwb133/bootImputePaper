@@ -46,7 +46,7 @@ j2rImp <- function(inputData,postDraw) {
     outcomeModBeta = beta + MASS::mvrnorm(1, mu=rep(0,ncol(covariance)), Sigma=covariance)
   }
   impfitted <- outcomeModBeta[1] + outcomeModBeta[2]*controly[,1]
-  controly[is.na(controly[,2])] <- impfitted[is.na(controly[,2])] + rnorm(sum(is.na(controly[,2])), mean=0, sd=outcomeModResVar^0.5)
+  controly[is.na(controly[,2]),2] <- impfitted[is.na(controly[,2])] + rnorm(sum(is.na(controly[,2])), mean=0, sd=outcomeModResVar^0.5)
   
   #now j2r for active patients
   #this uses regression coefficient from controls, marginal mean for y2 from control, and marginal mean for y1 from active
@@ -65,7 +65,7 @@ j2rImp <- function(inputData,postDraw) {
   mu2Control <- outcomeModBeta[1] + outcomeModBeta[2]*mu1Control
   #fitted values for active patients under j2r
   impfitted <- mu2Control + outcomeModBeta[2]*(activey[,1]-mu1Active)
-  activey[is.na(activey[,2])] <- impfitted[is.na(activey[,2])] + rnorm(sum(is.na(activey[,2])), mean=0, sd=outcomeModResVar^0.5)
+  activey[is.na(activey[,2]),2] <- impfitted[is.na(activey[,2])] + rnorm(sum(is.na(activey[,2])), mean=0, sd=outcomeModResVar^0.5)
   
   data.frame(rbind(cbind(z=0, controly), cbind(z=1, activey)))
 }
@@ -99,7 +99,7 @@ imputeAnalyse <- function(mar) {
       yimp <- j2rImp(originalData,postDraw=TRUE)
     }
     
-    impDataMod <- impDataMod <- lm(y.2~z+y.1, data=yimp)
+    impDataMod <- lm(y.2~z+y.1, data=yimp)
     impEsts[i] <- coef(impDataMod)[2]
     impVars[i] <- vcov(impDataMod)[2,2]
     
@@ -119,7 +119,7 @@ imputeAnalyse <- function(mar) {
   
   miBootPooledPercentile <- c(mean(impEsts), var(c(bsImpEsts)), quantile(c(bsImpEsts),0.025), quantile(c(bsImpEsts),0.975))
   miBootPooledNormal <- c(mean(impEsts), var(c(bsImpEsts)), mean(impEsts)-1.96*var(c(bsImpEsts))^0.5, 
-                         mean(impEsts)+1.96*var(c(bsImpEsts))^0.5)
+                          mean(impEsts)+1.96*var(c(bsImpEsts))^0.5)
   
   ##################################################Boot MI methods####################################################
   #boot MI and boot MI pooled
@@ -132,7 +132,7 @@ imputeAnalyse <- function(mar) {
       } else {
         yimp <- j2rImp(bsData,postDraw=TRUE)
       }
-      impDataMod <- impDataMod <- lm(y.2~z+y.1, data=yimp)
+      impDataMod <- lm(y.2~z+y.1, data=yimp)
       bsImpEsts[i,j] <- coef(impDataMod)[2]
     }
   }
@@ -183,7 +183,7 @@ for (sim in 1:nSim) {
   
   #second impute using J2R (uncongenial)
   j2rResults[sim,,] <- imputeAnalyse(mar=FALSE)
-
+  
 }
 
 save(marResults, j2rResults, file=(paste("./results/simRes_", batch, ".RData", sep="")))

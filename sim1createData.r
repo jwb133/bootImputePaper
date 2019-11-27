@@ -2,7 +2,7 @@
 
 library(MASS)
 
-corr <- matrix(c(0.4,0.04,0.04,0.4), nrow=2)
+corr <- matrix(c(0.4,0.2,0.2,0.4), nrow=2)
 
 #sample size
 n <- 500
